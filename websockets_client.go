@@ -20,7 +20,7 @@ func NewClient(w *websocket.Conn) *WebsocketClient {
 	return &wc
 }
 
-type WebsocketListener func(w *WebsocketClient, msg []byte) error
+type WebsocketListener func(w *WebsocketClient, msg []byte)
 
 func (wc *WebsocketClient) Emit(event string, data interface{}) error {
 	message := make(map[string]interface{})
@@ -50,11 +50,12 @@ func (wc *WebsocketClient) On(event string, fn WebsocketListener) {
 	wc.listenerMap[event] = append(wc.listenerMap[event], fn)
 }
 
-func (wc *WebsocketClient) ProcessMessages() error {
+func (wc *WebsocketClient) ProcessMessages() {
 	for {
 		_, message, err := wc.ReadMessage()
 		if err != nil {
 			log.Errorf("Failed to read message from websocket: %v", err)
+			continue
 		}
 		log.Debugf("Received message: %v", strings.TrimSpace(string(message)))
 
@@ -78,5 +79,4 @@ func (wc *WebsocketClient) ProcessMessages() error {
 			}
 		}
 	}
-	return nil
 }

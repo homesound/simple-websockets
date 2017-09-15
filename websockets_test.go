@@ -37,9 +37,8 @@ func TestListener(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	ws.On("test", func(w *WebsocketClient, msg []byte) error {
+	ws.On("test", func(w *WebsocketClient, msg []byte) {
 		wg.Done()
-		return nil
 	})
 	go server.Serve(snl)
 	defer stopServer(snl)
@@ -66,9 +65,8 @@ func TestMultipleListener(t *testing.T) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		ws.On("test", func(w *WebsocketClient, msg []byte) error {
+		ws.On("test", func(w *WebsocketClient, msg []byte) {
 			wg.Done()
-			return nil
 		})
 	}
 	go server.Serve(snl)
@@ -96,13 +94,12 @@ func TestEmit(t *testing.T) {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	counter := 0
-	ws.On("ping", func(w *WebsocketClient, msg []byte) error {
+	ws.On("ping", func(w *WebsocketClient, msg []byte) {
 		log.Debugf("server ping")
 		expected := fmt.Sprintf("%v", counter)
 		_ = expected
 		log.Debugf("Attempting to emit pong on socket")
 		w.Emit("pong", []byte(fmt.Sprintf("%v", counter)))
-		return nil
 	})
 	go server.Serve(snl)
 	defer stopServer(snl)
@@ -117,7 +114,7 @@ func TestEmit(t *testing.T) {
 	require.NotNil(c)
 	client := NewClient(c)
 	go client.ProcessMessages()
-	client.On("pong", func(w *WebsocketClient, msg []byte) error {
+	client.On("pong", func(w *WebsocketClient, msg []byte) {
 		log.Debugf("client pong")
 		expected := fmt.Sprintf("%v", counter)
 		_ = expected
@@ -127,7 +124,6 @@ func TestEmit(t *testing.T) {
 		} else {
 			client.Emit("ping", fmt.Sprintf("%v", counter))
 		}
-		return nil
 	})
 	client.Emit("ping", fmt.Sprintf("%v", counter))
 	require.Nil(err)
