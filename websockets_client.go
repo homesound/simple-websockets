@@ -30,6 +30,10 @@ func (wc *WebsocketClient) Emit(event string, data interface{}) error {
 		// which the JS knows to decapsulate
 		message[WS_TYPE_KEY] = WS_STRING_MESSAGE_KEY
 		message[WS_STRING_MESSAGE_KEY] = data
+	case []byte:
+		if err := json.Unmarshal(data.([]byte), &message); err != nil {
+			log.Errorf("Failed to unmarshal emit's data: %v", err)
+		}
 	default:
 		b, err := json.Marshal(data)
 		if err != nil {
