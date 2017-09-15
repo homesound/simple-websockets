@@ -9,9 +9,11 @@ import (
 )
 
 const (
-	WS_EVENT_KEY          string = "_ws_event"
-	WS_TYPE_KEY           string = "_ws_type"
-	WS_STRING_MESSAGE_KEY string = "_ws_type_string"
+	WS_EVENT_KEY             = "_ws_event"
+	WS_TYPE_KEY              = "_ws_type"
+	WS_MESSAGE_TYPE_STRING   = "_ws_msg_type_string"
+	WS_MESSAGE_TYPE_JSON     = "_ws_msg_type_json"
+	WS_MESSAGE_TYPE_ABSTRACT = "_ws_msg_type_abstract"
 )
 
 type WebsocketServer struct {

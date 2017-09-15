@@ -1,16 +1,19 @@
 package websockets
 
 import (
-	"encoding/json"
-	"strings"
-
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
+	"github.com/vmihailenco/msgpack"
 )
 
 type WebsocketClient struct {
 	*websocket.Conn
 	listenerMap map[string][]WebsocketListener
+}
+
+type WebsocketMessage struct {
+	Event string      `msgpack:"event"`
+	Data  interface{} `msgpack:"data"`
 }
 
 func NewClient(w *websocket.Conn) *WebsocketClient {
@@ -20,31 +23,22 @@ func NewClient(w *websocket.Conn) *WebsocketClient {
 	return &wc
 }
 
-type WebsocketListener func(w *WebsocketClient, msg []byte)
+type WebsocketListener func(w *WebsocketClient, data interface{})
 
 func (wc *WebsocketClient) Emit(event string, data interface{}) error {
-	message := make(map[string]interface{})
-	switch data.(type) {
-	case string:
-		// This is a string. Encapsulate it in a special map
-		// which the JS knows to decapsulate
-		message[WS_TYPE_KEY] = WS_STRING_MESSAGE_KEY
-		message[WS_STRING_MESSAGE_KEY] = data
-	case []byte:
-		if err := json.Unmarshal(data.([]byte), &message); err != nil {
-			log.Errorf("Failed to unmarshal emit's data: %v", err)
-		}
-	default:
-		b, err := json.Marshal(data)
-		if err != nil {
-			log.Errorf("Failed to marshal emit's data: %v", err)
-			return err
-		}
-		_ = json.Unmarshal(b, &message)
+	msg := WebsocketMessage{event, data}
+
+	b, err := msgpack.Marshal(&msg)
+	if err != nil {
+		log.Errorf("Failed to marshal: %v", err)
+		return err
 	}
-	message[WS_EVENT_KEY] = event
-	log.Debugf("Emitting: %v", message)
-	return wc.WriteJSON(message)
+	log.Debugf("Emitting event=%v data=%v len=%v", event, data, len(b))
+	if err := wc.WriteMessage(websocket.BinaryMessage, b); err != nil {
+		log.Errorf("Failed to write message: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (wc *WebsocketClient) On(event string, fn WebsocketListener) {
@@ -56,31 +50,24 @@ func (wc *WebsocketClient) On(event string, fn WebsocketListener) {
 
 func (wc *WebsocketClient) ProcessMessages() {
 	for {
-		_, message, err := wc.ReadMessage()
+		t, message, err := wc.ReadMessage()
 		if err != nil {
 			log.Errorf("Failed to read message from websocket: %v", err)
 			continue
 		}
-		log.Debugf("Received message: %v", strings.TrimSpace(string(message)))
-
-		msg := make(map[string]interface{})
-		if err := json.Unmarshal(message, &msg); err != nil {
-			log.Errorf("Failed to unmarshal message from websocket: %v", err)
-			break
-		}
-		_event, ok := msg[WS_EVENT_KEY]
-		if !ok {
-			log.Errorf("No event specified: %v", message)
-			continue
-		}
-		event := _event.(string)
+		log.Debugf("Received message type=%v message=%v", t, message)
+		msg := WebsocketMessage{}
+		msgpack.Unmarshal(message, &msg)
+		event := msg.Event
+		log.Debugf("event=%v data=%v", event, msg.Data)
 		if listeners, ok := wc.listenerMap[event]; !ok {
 			log.Warnf("Received unknown event: %v", event)
 			continue
 		} else {
 			for _, listener := range listeners {
-				listener(wc, message)
+				listener(wc, msg.Data)
 			}
 		}
+
 	}
 }
