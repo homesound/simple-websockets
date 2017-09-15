@@ -1,0 +1,34 @@
+<html>
+	<head>
+		<script
+src="https://code.jquery.com/jquery-3.2.1.js"
+integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+crossorigin="anonymous"></script>
+		<script type="text/javascript" src="/static/js/simple-websockets.js"></script>
+	</head>
+	<body>
+		<div style="display: block; margin-bottom: 2em">
+			<input type="text">
+		</div>
+		<div>
+			<textarea cols=80 rows=10></textarea>
+		</div>
+
+<script>
+var socket = SimpleWebSocket.connect();
+$('input').on('keypress', function(e) {
+	if (e.keyCode == 13) {
+		var val = $(this).val();
+		console.log('Value: ' + val);
+		socket.emit('echo', {value: val});
+		$('input').val('');
+	}
+});
+
+socket.on('echo', function(data) {
+	$('textarea').val($('textarea').val() + '\n' + JSON.stringify(data))
+});
+</script>
+	</body>
+
+
