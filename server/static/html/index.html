@@ -16,22 +16,26 @@ crossorigin="anonymous"></script>
 		</div>
 
 <script>
-var socket = SimpleWebSocket.connect();
-$('input').on('keypress', function(e) {
-	if (e.keyCode == 13) {
-		var val = $(this).val();
-		console.log('Value: ' + val);
-		socket.emit('echo', val);
-		$('input').val('');
-	}
-});
+debugger;
+var socket = new SimpleWebSocket();
+socket.onopen = function() {
+	$('input').on('keypress', function(e) {
+		if (e.keyCode == 13) {
+			var val = $(this).val();
+			console.log('Value: ' + val);
+			socket.emit('echo', val);
+			$('input').val('');
+		}
+	});
 
-socket.on('echo', function(data) {
-	if(typeof data === 'object') {
-		data = JSON.stringify(data);
-	}
-	$('textarea').val($('textarea').val() + '\n' + data)
-});
+	socket.on('echo', function(data) {
+		if(typeof data === 'object') {
+			data = JSON.stringify(data);
+		}
+		$('textarea').val($('textarea').val() + '\n' + data)
+	});
+};
+socket.connect();
 </script>
 	</body>
 
