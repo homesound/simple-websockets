@@ -122,7 +122,7 @@ func TestEmit(t *testing.T) {
 		_ = expected
 		got := data
 		_ = got
-		log.Infof("Expected '%v'  Got '%v'", expected, got)
+		log.Debugf("Expected '%v'  Got '%v'", expected, got)
 		log.Debugf("Attempting to emit pong on socket")
 		w.Emit("pong", counter)
 	})
