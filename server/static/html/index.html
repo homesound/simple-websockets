@@ -21,13 +21,16 @@ $('input').on('keypress', function(e) {
 	if (e.keyCode == 13) {
 		var val = $(this).val();
 		console.log('Value: ' + val);
-		socket.emit('echo', {value: val});
+		socket.emit('echo', val);
 		$('input').val('');
 	}
 });
 
 socket.on('echo', function(data) {
-	$('textarea').val($('textarea').val() + '\n' + JSON.stringify(data))
+	if(typeof data === 'object') {
+		data = JSON.stringify(data);
+	}
+	$('textarea').val($('textarea').val() + '\n' + data)
 });
 </script>
 	</body>

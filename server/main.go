@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -20,20 +19,20 @@ func serveHome(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	router := mux.NewRouter()
 	router.HandleFunc("/", serveHome)
 	router.PathPrefix("/static").Handler(http.FileServer(http.Dir("./")))
-	ws := websockets.NewWebsocketServer(router)
+	ws := websockets.NewServer(router)
 	server := http.Server{}
 	server.Handler = router
 	snl, err := stoppablenetlistener.New(51221)
 	if err != nil {
 		log.Fatalf("Failed to listen to port 51221: %v", err)
 	}
-	ws.On("echo", func(w *websockets.WebsocketClient, msg []byte) error {
-		log.Infof("Received: %v", string(msg))
-		w.Emit("echo", []byte(fmt.Sprintf("Successfully received: %v", string(msg))))
-		return nil
+	ws.On("echo", func(w *websockets.WebsocketClient, data interface{}) {
+		log.Infof("Received: %v", data)
+		w.Emit("echo", data)
 	})
 	log.Infof("Running server on port: 51221")
 	server.Serve(snl)
