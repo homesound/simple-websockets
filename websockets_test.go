@@ -154,3 +154,23 @@ func TestEmit(t *testing.T) {
 	require.Nil(err)
 	wg.Wait()
 }
+
+func TestClose(t *testing.T) {
+	require := require.New(t)
+	server, snl, _ := setupWS()
+
+	go server.Serve(snl)
+	defer stopServer(snl)
+
+	u := url.URL{
+		Scheme: "ws",
+		Host:   "localhost:51221",
+		Path:   "/ws",
+	}
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	require.Nil(err)
+	require.NotNil(c)
+	client := NewClient(c)
+	err = client.Close()
+	require.Nil(err)
+}
