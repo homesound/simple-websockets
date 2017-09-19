@@ -157,15 +157,33 @@ func TestClose(t *testing.T) {
 	go server.Serve(snl)
 	defer stopServer(snl)
 
-	u := url.URL{
-		Scheme: "ws",
-		Host:   "localhost:51221",
-		Path:   "/ws",
-	}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	c, err := setupClient()
 	require.Nil(err)
 	require.NotNil(c)
 	client := NewClient(c)
 	err = client.Close()
 	require.Nil(err)
+}
+
+func TestAttachListenerAfterConnect(t *testing.T) {
+	require := require.New(t)
+	server, snl, ws := setupWS()
+
+	go server.Serve(snl)
+	defer stopServer(snl)
+
+	c, err := setupClient()
+	require.Nil(err)
+	require.NotNil(c)
+	client := NewClient(c)
+
+	msg := "TestAttachListenerAfterConnect"
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	ws.On("after-connect", func(w *WebsocketClient, data interface{}) {
+		require.Equal(msg, data)
+		wg.Done()
+	})
+	client.Emit("after-connect", msg)
+	wg.Wait()
 }
