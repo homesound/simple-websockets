@@ -52,7 +52,7 @@ func (wc *WebsocketClient) ProcessMessages() {
 	for {
 		t, message, err := wc.ReadMessage()
 		if err != nil {
-			log.Errorf("Failed to read message from websocket: %v", err)
+			//log.Errorf("Failed to read message from websocket: %v", err)
 			break
 		}
 		log.Debugf("Received message type=%v message=%v", t, message)
