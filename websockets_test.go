@@ -33,6 +33,16 @@ func stopServer(snl *stoppablenetlistener.StoppableNetListener) {
 	snl.Stop()
 }
 
+func setupClient() (*websocket.Conn, error) {
+	u := url.URL{
+		Scheme: "ws",
+		Host:   "localhost:51221",
+		Path:   "/ws",
+	}
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	return c, err
+}
+
 func TestMsgPack(t *testing.T) {
 	require := require.New(t)
 	data := []int{1, 2, 3}
@@ -67,12 +77,7 @@ func TestListener(t *testing.T) {
 	go server.Serve(snl)
 	defer stopServer(snl)
 
-	u := url.URL{
-		Scheme: "ws",
-		Host:   "localhost:51221",
-		Path:   "/ws",
-	}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	c, err := setupClient()
 	require.Nil(err)
 	require.NotNil(c)
 	client := NewClient(c)
@@ -95,12 +100,7 @@ func TestMultipleListener(t *testing.T) {
 	go server.Serve(snl)
 	defer stopServer(snl)
 
-	u := url.URL{
-		Scheme: "ws",
-		Host:   "localhost:51221",
-		Path:   "/ws",
-	}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	c, err := setupClient()
 	require.Nil(err)
 	require.NotNil(c)
 	client := NewClient(c)
@@ -129,12 +129,7 @@ func TestEmit(t *testing.T) {
 	go server.Serve(snl)
 	defer stopServer(snl)
 
-	u := url.URL{
-		Scheme: "ws",
-		Host:   "localhost:51221",
-		Path:   "/ws",
-	}
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	c, err := setupClient()
 	require.Nil(err)
 	require.NotNil(c)
 	client := NewClient(c)
