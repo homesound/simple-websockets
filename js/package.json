@@ -1,0 +1,19 @@
+{
+  "name": "simple-websockets",
+  "version": "1.0.0",
+  "description": "JS implementation of simple-websockets",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "websockets"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "msgpack-lite": "^0.1.26",
+    "webpack": "^3.10.0"
+  }
+}

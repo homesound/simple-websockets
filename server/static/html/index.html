@@ -4,8 +4,8 @@
 src="https://code.jquery.com/jquery-3.2.1.js"
 integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
 crossorigin="anonymous"></script>
-		<script type="text/javascript" src="/static/js/msgpack.min.js"></script>
-		<script type="text/javascript" src="/static/js/simple-websockets.js"></script>
+		<!-- <script type="text/javascript" src="/static/js/simple-websockets.min.js"></script> -->
+		<script type="text/javascript" src="/static/js/bundle.js"></script>
 	</head>
 	<body>
 		<div style="display: block; margin-bottom: 2em">
@@ -29,14 +29,15 @@ socket.onopen = function() {
 	});
 
 	socket.on('echo', function(data) {
+		var result
 		if(typeof data === 'object') {
-			data = JSON.stringify(data);
+			result = JSON.stringify(data) + '  (obj)';
+		} else {
+			result = data
 		}
-		$('textarea').val($('textarea').val() + '\n' + data)
+		$('textarea').val($('textarea').val() + `\n${result}`)
 	});
 };
 socket.connect();
 </script>
 	</body>
-
-
