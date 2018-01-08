@@ -22,6 +22,7 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 	router := mux.NewRouter()
 	router.HandleFunc("/", serveHome)
+	router.PathPrefix("/static/js").Handler(http.StripPrefix("/static/js", http.FileServer(http.Dir("../js"))))
 	router.PathPrefix("/static").Handler(http.FileServer(http.Dir("./")))
 	ws := websockets.NewServer(router)
 	server := http.Server{}
